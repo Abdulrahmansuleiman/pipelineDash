@@ -48,6 +48,24 @@ When you're ready to go live:
 3. Once the booking webhook is added in GHL, have n8n forward it as
    `event_type: "booking_made"` — the Conversion Rate KPI lights up immediately.
 
+## Deploy to Vercel
+
+The repo is Vercel-ready (`vercel.json` + `api/index.js`): the whole Express app
+(API + webhook receiver) runs as one serverless Function, static assets come from
+the Vite build.
+
+1. Import the GitHub repo in Vercel (Framework: **Vite**, build/output auto-detected).
+2. **Required env vars** (Vercel > Settings > Environment Variables):
+   `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` — run `supabase/migrations.sql`
+   in Supabase first. Local-file mode is deliberately blocked on Vercel (read-only
+   filesystem) — the deploy fails loudly until Supabase is set.
+3. Optional: `GHL_WEBHOOK_SECRET` to authenticate webhook POSTs.
+4. Deploy, then point ConversionOS's HTTP Request node at
+   `https://<deployment>.vercel.app/api/webhook/events` (change from localhost).
+   Booking webhook → `event_type: "booking_made"` lights up Conversion Rate.
+
+Local dev is unchanged: `npm run dev` (frontend :5173 + backend :4001).
+
 ## Supabase
 
 - Agent-memory table `documents` stays **untouched** (separate concern).

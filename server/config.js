@@ -16,6 +16,13 @@ const WEBHOOK_PORT = Number.parseInt(process.env.WEBHOOK_PORT || '4001', 10);
 export function resolveConfig() {
   let mode;
   if (!SUPABASE_URL) {
+    if (process.env.VERCEL === '1') {
+      // local-file mode cannot write on Vercel (read-only filesystem) — fail
+      // loud at boot with the fix, never serve a dashboard that silently loses data.
+      throw new Error(
+        'Vercel deployment requires SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in the Vercel project env — local-file mode cannot persist on Vercel. Run supabase/migrations.sql in Supabase, then add both values in Vercel > Settings > Environment Variables.'
+      );
+    }
     mode = 'local-file';
   } else if (SUPABASE_SERVICE_ROLE_KEY) {
     mode = 'supabase';
